@@ -1,4 +1,21 @@
-# AGI Sandbox: Testing Ground for True General Intelligence
+**WAŻNE – Licencja i zasady użycia**
+
+**Darmowe w 100 % ** dla:
+- badań naukowych
+- edukacji
+- projektów niekomercyjnych
+- hobbystów i open-source
+
+**Komercyjne wykorzystanie** (płatne modele, SaaS, usługi, trening zamkniętych AGI, produkty zar, enterprise)  
+→ **wymaga mojej zgody i uczciwego podzielenia się zyskiem**
+
+Kontakt komercyjny → zabinskirafal@outlook.com  
+lub LinkedIn: www.linkedin.com/in/zabinskirafal
+
+Dziękuję – to pozwala mi rozwijać projekt full-time dla całej społeczności!
+
+— Rafał Żabiński, twórca oryginalnej koncepcji (grudzień 2025)
+# AGI : Testing Ground for True General Intelligence
 
 **Odwrócona rzeczywistość dla AGI**  
 *Inspired by Rafał Żabiński’s original vision (December 2025)*
