@@ -1,3 +1,13 @@
+> Part of **AGIPragma** research program.  
+This repository contains foundational ideas and intuitions about AGI.
+## AGIPragma links
+- **AGI-Development (framework + doctrine + catalogue):** https://github.com/zabinskirafal/AGI-Development
+- **developmental-agi-sandbox (benchmark):** https://github.com/zabinskirafal/developmental-agi-sandbox
+## Authorship & commercialization
+- **Author:** Rafał Żabiński  
+- Research and commercial R&D use are permitted.
+- **Commercialization (revenue, paid products/services, SaaS, licensing)** requires a separate commercial license from the author.
+
 **WAŻNE – Licencja i zasady użycia**
 
 **Darmowe w 100 % ** dla:
@@ -219,4 +229,8 @@ namespace SandboxAGI.Scripts
 }
 
 // Inspired by Rafał Żabiński’s AGI Testing Ground concept – Dec 10, 2025
+## Authorship & commercialization
+- **Author:** Rafał Żabiński  
+- Research and commercial R&D use are permitted.
+- **Commercialization (revenue, paid products/services, SaaS, licensing)** requires a separate commercial license from the author.
 
