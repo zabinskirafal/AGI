@@ -234,3 +234,39 @@ namespace SandboxAGI.Scripts
 - Research and commercial R&D use are permitted.
 - **Commercialization (revenue, paid products/services, SaaS, licensing)** requires a separate commercial license from the author.
 
+# AGI Pragma: Decision Intelligence Framework
+
+> **"Intelligence as iterative decision-making, not opaque optimization."**
+
+[![DOI](https://img.shields.io/badge/DOI-Pending-blue)](https://doi.org/YOUR_NEW_DOI_HERE)
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/Version-2.0.0-green)](https://github.com/zabinskirafal/AGI)
+
+## Overview
+**AGI Pragma** is a transparent, methodology-first framework for Artificial General Intelligence. Unlike traditional "black-box" models, Pragma operates through a verifiable **Decision Intelligence Core (DIC)**. It prioritizes logical consistency, statistical risk assessment, and traceable learning.
+
+
+
+## Core Architecture
+The system processes information through a structured four-stage pipeline:
+
+### 1. Recursive Branching (Decision Tree)
+The system maps the decision space into binary branches. Every path is validated against core logical constraints (including the `0=1` contradiction check) to ensure integrity before computation begins.
+
+### 2. Sensitivity Filtering (Tornado Analysis)
+To maximize hardware efficiency, AGI Pragma identifies high-impact variables. By calculating the sensitivity of outcomes relative to inputs, the system prunes noise and focuses computational power on "critical drivers."
+
+### 3. Stochastic Validation (Monte Carlo)
+High-impact variables are subjected to thousands of stochastic iterations using probability distributions (Gaussian/PERT). This defines the mathematical **Confidence Interval** for every potential action.
+
+### 4. Recursive Learning (Bayesian Update)
+Pragma utilizes Bayesian inference to update its world-model. This creates a 100% auditable learning trail, where every "belief" shift is supported by empirical or simulated evidence.
+
+## Installation
+
+```bash
+# Clone the repository
+git clone [https://github.com/zabinskirafal/AGI.git](https://github.com/zabinskirafal/AGI.git)
+
+# Install dependencies
+pip install -r requirements.txt
