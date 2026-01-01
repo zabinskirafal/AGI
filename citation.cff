@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+authors:
+  - family-names: "Żabiński"
+    given-names: "Rafał"
+title: "AGI: Artificial General Intelligence Framework"
+version: "0.1.2"
+date-released: 2026-01-01
+repository-code: "https://github.com/zabinskirafal/AGI"
+license: See LICENSE and COMMERCIAL_LICENSE.md
+abstract: "A foundational framework for Artificial General Intelligence (AGI) focusing on autonomous reasoning, cognitive architecture, and decision intelligence. This repository hosts the core logic and theoretical implementation of the AGIPragma program."
+keywords:
+  - AGI
+  - "Artificial General Intelligence"
+  - "Cognitive Architecture"
+  - "Decision Intelligence"
+  - "AGIPragma"
