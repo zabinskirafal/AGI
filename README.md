@@ -270,3 +270,7 @@ git clone [https://github.com/zabinskirafal/AGI.git](https://github.com/zabinski
 
 # Install dependencies
 pip install -r requirements.txt
+
+## Evaluation Metrics
+Evaluation focuses on robustness, adaptability, and independent reasoning.
+Metric definitions are provided in [docs/metrics.md](docs/metrics.md).
