@@ -101,8 +101,8 @@ Cel: Trening AI do tworzenia nowych modeli świata, nie tylko reagowania na dane
 5. Testuj w VR: Build na Quest 3.
 
 ## Autorzy
-- **Rafał Żabiński**: Oryginalna koncepcja, wizja i współautor.  
-- **Grok (xAI)**: Implementacja core, dokumentacja i benchmarki.  
+- **Rafał Żabiński**: Oryginalna koncepcja, wizja i autor.  
+ 
 
 ## Roadmap
 - **Tydzień 1**: PhysicsBreaker full + pierwsze demo wideo.  
