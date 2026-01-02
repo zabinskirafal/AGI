@@ -305,3 +305,29 @@ AGI Pragma evaluates adaptive intelligence under uncertainty using:
 
 Detailed methodology is described in
 [docs/Methodology.md](docs/Methodology.md).
+
+Oczywiście, Rafał. Możemy zostawić Twoją oryginalną strukturę i dopisać nową sekcję na samym dole. Dzięki temu zachowasz swój autentyczny styl i historię projektu, a jednocześnie dodasz profesjonalne uzupełnienie techniczne.
+
+Oto co powinieneś dopisać na samym końcu swojego pliku README.md, aby domknąć całość:
+
+Dopisz to na dole pliku:
+Markdown
+
+---
+
+## 🚀 2026 Expansion: The Decision Intelligence Layer
+
+To complement the ChaosGym vision, I have integrated the **Decision Intelligence Core (DIC)**. This layer acts as the "logical brain" that allows agents to survive when binary rules fail.
+
+### Key Technical Components:
+* **Strategic Decoupling & Swarm Logic:** A new mechanism that alternates between collective teamwork and **forced independent reasoning**. In extreme chaos, agents are decoupled to find unique solutions, preventing "groupthink" and system-wide failure.
+* **Tornado Sensitivity Analysis:** Dynamically identifies which environmental variables (like gravity or entropy) are "critical drivers" for survival, optimizing CPU/GPU usage.
+* **Monte Carlo Risk Validation:** Before an agent acts in the sandbox, it runs 10,000+ stochastic simulations to estimate the success probability.
+* **Bayesian Belief Convergence:** Agents update their internal "world-model" using probabilistic inference, ensuring a 100% auditable learning trail.
+
+### New Directory Structure:
+- `/core`: Python implementation of Tornado, Monte Carlo, and Bayesian modules.
+- `/core/agent_swarm.py`: Logic for agent collaboration and forced isolation.
+- `/docs/WHITE_PAPER_V2.md`: Full mathematical formalization of the framework.
+
+**This integration transforms AGI Pragma from a testing sandbox into a complete, resilient AGI development framework.**
