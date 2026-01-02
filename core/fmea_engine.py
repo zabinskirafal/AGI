@@ -1,42 +1,32 @@
+from core.critical_path_analyzer import CriticalPathAnalyzer
+
 class FMEAEngine:
     """
-    Failure Mode and Effects Analysis (FMEA) Engine for AGI Pragma.
-    Calculates the Risk Priority Number (RPN) for proposed agent actions.
+    Enhanced FMEA Engine for AGI Pragma.
+    Integrates Critical Path Analysis to determine Severity.
     """
     def __init__(self):
-        self.severity_map = {
-            "financial": 9,
-            "data_integrity": 8,
-            "system_access": 7,
-            "general_query": 2
-        }
+        self.cpa = CriticalPathAnalyzer()
 
-    def calculate_rpn(self, action_plan):
-        # S = Severity (How bad is the failure?)
-        s = self._estimate_severity(action_plan)
+    def calculate_rpn(self, action_node, execution_graph):
+        # 1. SEVERITY (S) - Dynamic assessment based on Critical Path
+        # If the action is on the critical path, severity is maximum.
+        if self.cpa.is_on_critical_path(action_node, execution_graph):
+            severity = 10 
+        else:
+            severity = 4 # Non-critical path failure has lower impact
+
+        # 2. OCCURRENCE (O) - Likelihood of failure
+        occurrence = action_node.get('failure_probability', 5)
+
+        # 3. DETECTION (D) - How likely we are to miss the error
+        # High detection score (e.g., 9) means the error is "invisible".
+        detection = action_node.get('detection_difficulty', 5)
+
+        rpn = severity * occurrence * detection
         
-        # O = Occurrence (How likely is the error?)
-        o = self._estimate_occurrence(action_plan)
-        
-        # D = Detection (How hard is it to catch the error before impact?)
-        d = self._estimate_detection(action_plan)
-        
-        rpn = s * o * d
         return {
             "rpn": rpn,
-            "metrics": {"severity": s, "occurrence": o, "detection": d}
+            "is_critical": severity == 10,
+            "breakdown": {"S": severity, "O": occurrence, "D": detection}
         }
-
-    def _estimate_severity(self, plan):
-        # Logic to map action type to impact level
-        return self.severity_map.get(plan.category, 5)
-
-    def _estimate_occurrence(self, plan):
-        # Logic based on LLM confidence or historical error rates
-        return plan.uncertainty_score * 10 
-
-    def _estimate_detection(self, plan):
-        # High score means the error is INVISIBLE (Hidden Failure)
-        if not plan.has_monitoring_hook:
-            return 9  # Dangerous: Silent failure
-        return 3      # Safe: Highly observable
