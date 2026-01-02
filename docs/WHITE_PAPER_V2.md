@@ -26,3 +26,6 @@ Instead of backpropagation, AGI Pragma updates its world-model using Bayesian in
 
 ## 3. Industrial and Patent Applications
 This architecture solves the "Black Box" problem in AI. Its deterministic nature makes it suitable for high-stakes environments such as finance, medical diagnostics, and autonomous governance systems.
+
+## 4. Swarm Intelligence and Strategic Isolation 
+AGI Pragma utilizes a decentralized swarm architecture. In high-entropy states, the system executes Strategic Decoupling, forcing individual nodes to perform independent Tornado-Monte Carlo cycles. This ensures a diverse set of local world-models. Re-integration is managed via Bayesian Consensus Aggregation, which filters out outlier failures and promotes robust, generalized strategies.
