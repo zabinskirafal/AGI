@@ -271,6 +271,37 @@ git clone [https://github.com/zabinskirafal/AGI.git](https://github.com/zabinski
 # Install dependencies
 pip install -r requirements.txt
 
+
+
+## Collaboration and Forced Independence
+
+The framework explicitly separates collaborative problem-solving
+from individual reasoning capability by alternating between
+collaborative and isolated operational modes.
+
+This prevents imitation-based performance and validates true
+independent understanding.
+
+See [docs/methods/collaboration_isolation.md](docs/methods/collaboration_isolation.md).
+
+
 ## Evaluation Metrics
 Evaluation focuses on robustness, adaptability, and independent reasoning.
 Metric definitions are provided in [docs/metrics.md](docs/metrics.md).
+
+## Methodology
+The research methodology is described in [docs/Methodology.md](docs/Methodology.md).
+
+## Methodology (Summary)
+
+AGI Pragma evaluates adaptive intelligence under uncertainty using:
+
+- dynamically changing environment rules (Reverse-Reality Sandbox),
+- explicit decision branching (e.g. YES / NO),
+- probabilistic belief updating (Bayesian inference),
+- robustness estimation via Monte Carlo simulation,
+- sensitivity ranking using Tornado analysis,
+- controlled collaboration and forced independence of agents.
+
+Detailed methodology is described in
+[docs/Methodology.md](docs/Methodology.md).
