@@ -98,3 +98,18 @@ All metrics should be reported with:
 - confidence intervals or percentiles.
 
 This ensures reproducibility and auditability.
+
+
+## Independence Metrics
+
+- CollaborationLift:
+  performance_collab - performance_isolated
+
+- IndependenceScore:
+  performance_isolated / performance_collab
+
+- IsolationRecoveryTime:
+  steps to return above X% performance after isolation
+
+- BeliefSelfConsistency:
+  stability of internal beliefs without peer input
