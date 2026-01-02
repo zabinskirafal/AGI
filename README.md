@@ -306,12 +306,6 @@ AGI Pragma evaluates adaptive intelligence under uncertainty using:
 Detailed methodology is described in
 [docs/Methodology.md](docs/Methodology.md).
 
-Oczywiście, Rafał. Możemy zostawić Twoją oryginalną strukturę i dopisać nową sekcję na samym dole. Dzięki temu zachowasz swój autentyczny styl i historię projektu, a jednocześnie dodasz profesjonalne uzupełnienie techniczne.
-
-Oto co powinieneś dopisać na samym końcu swojego pliku README.md, aby domknąć całość:
-
-Dopisz to na dole pliku:
-Markdown
 
 ---
 
