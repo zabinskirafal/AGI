@@ -345,3 +345,14 @@ If the RPN exceeds the predefined **Stop-Loss threshold**, the **Circuit Breaker
 1. **Halt:** Immediate suspension of autonomous execution.
 2. **Isolation:** The problematic logic is moved to a forced-isolation sandbox.
 3. **Escalation:** The system initiates a Bayesian update or requests human-in-the-loop verification.
+
+The core of **AGI Pragma** has been upgraded with an industrial-grade safety layer that mirrors human "pragmatic intelligence."
+
+### The FMEA + Critical Path Synergy
+Pragma does not just predict outcomes; it assesses the structural integrity of its own decisions:
+* **Critical Path Analysis (CPA):** Identifies which steps are indispensable for the mission's success.
+* **FMEA Risk Engine:** Quantifies risk via the **Risk Priority Number (RPN)**:
+  $$RPN = Severity \times Occurrence \times Detection$$
+* **Cognitive Circuit Breaker:** An automated "stop-loss" that halts execution if the RPN exceeds safety thresholds, preventing catastrophic "silent failures."
+
+This framework ensures that the system is not just "smart," but **accountable and robust** in high-stakes environments.
