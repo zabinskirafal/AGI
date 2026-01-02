@@ -1,17 +1,17 @@
-cff-version: 1.4.0
+cff-version: 1.5.0
 message: "If you use this work, please cite it as below."
 title: "AGI Pragma: Decision Intelligence Core and Reverse-Reality Swarm Sandbox"
-version: "2.1.0"
+version: "2.2.0"
 date-released: 2026-01-02
 authors:
   - family-names: "Zabinski"
     given-names: "Rafal"
 abstract: >
-  AGI Pragma is a research framework for evaluating adaptive intelligence 
-  in high-entropy environments. It integrates a Decision Intelligence Core (DIC) 
-  featuring Tornado sensitivity analysis, Monte Carlo risk validation, 
-  and Bayesian belief updating. The framework introduces Strategic Decoupling 
-  protocols for multi-agent systems to validate independent reasoning.
+AGI Pragma is a research framework for evaluating adaptive intelligence in high-entropy environments. 
+  It features a unique Decision Intelligence Core (DIC) that integrates FMEA-based risk management 
+  with Critical Path Analysis. This architecture allows for autonomous reasoning governed by 
+  formal safety protocols, including cognitive circuit breakers and Bayesian belief updating 
+  to ensure robust agent behavior.
 license: See LICENSE and COMMERCIAL_LICENSE.md
 repository-code: "https://github.com/zabinskirafal/AGI"
 keywords:
