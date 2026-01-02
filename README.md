@@ -331,3 +331,5 @@ To complement the ChaosGym vision, I have integrated the **Decision Intelligence
 - `/docs/WHITE_PAPER_V2.md`: Full mathematical formalization of the framework.
 
 **This integration transforms AGI Pragma from a testing sandbox into a complete, resilient AGI development framework.**
+
+https://doi.org/10.5281/zenodo.18130707
