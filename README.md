@@ -326,4 +326,22 @@ To complement the ChaosGym vision, I have integrated the **Decision Intelligence
 
 **This integration transforms AGI Pragma from a testing sandbox into a complete, resilient AGI development framework.**
 
-https://doi.org/10.5281/zenodo.18130707
+
+
+## 🛡️ AI Safety & Decision Intelligence (FMEA)
+
+AGI Pragma implements a unique **Risk-Aware Orchestration** layer. Unlike traditional LLM agents that execute actions based on probability alone, Pragma uses an industrial-grade **FMEA (Failure Mode and Effects Analysis)** framework.
+
+### The RPN Mechanism
+For every proposed branch, the system calculates a **Risk Priority Number (RPN)**:
+$$RPN = Severity \times Occurrence \times Detection$$
+
+- **Severity (S):** Impact on the critical path and mission-critical assets.
+- **Occurrence (O):** Statistical likelihood of model hallucination or logic failure.
+- **Detection (D):** The system's ability to monitor and self-correct.
+
+### Cognitive Circuit Breaker
+If the RPN exceeds the predefined **Stop-Loss threshold**, the **Circuit Breaker** triggers:
+1. **Halt:** Immediate suspension of autonomous execution.
+2. **Isolation:** The problematic logic is moved to a forced-isolation sandbox.
+3. **Escalation:** The system initiates a Bayesian update or requests human-in-the-loop verification.
