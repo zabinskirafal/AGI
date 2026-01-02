@@ -6,26 +6,23 @@ date-released: 2026-01-02
 authors:
   - family-names: "Zabinski"
     given-names: "Rafal"
-abstract: >
-AGI Pragma is a research framework for evaluating adaptive intelligence in high-entropy environments. 
-  It features a unique Decision Intelligence Core (DIC) that integrates FMEA-based risk management 
-  with Critical Path Analysis. This architecture allows for autonomous reasoning governed by 
-  formal safety protocols, including cognitive circuit breakers and Bayesian belief updating 
-  to ensure robust agent behavior.
+abstract: >-
+  AGI Pragma (v2.2.0) is a research framework for adaptive intelligence. 
+  This version introduces the 'Decision Integrity Layer', integrating 
+  FMEA-based risk assessment (RPN) with Critical Path Analysis (CPA). 
+  It enables autonomous agents to govern their own reasoning through 
+  cognitive circuit breakers and Bayesian belief updating in 
+  high-entropy environments.
 license: See LICENSE and COMMERCIAL_LICENSE.md
 repository-code: "https://github.com/zabinskirafal/AGI"
 keywords:
   - artificial general intelligence
   - decision intelligence
-  - swarm intelligence
-  - strategic decoupling
-  - monte carlo simulation
-  - bayesian inference
-  - tornado analysis
-  - multi-agent systems
-  - safety systems
-  - Decision Intelligence Framework
-  - artificial intelligence
-  - Collaboration Mode
-  - Decentralized Multi-Agent System 
-  - MAS 
+  - AI safety
+  - FMEA
+  - critical path analysis
+  - RPN risk management
+  - autonomous agents
+  - Bayesian inference
+  - AI
+  - LLM SAFETY
