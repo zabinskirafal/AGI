@@ -356,3 +356,21 @@ Pragma does not just predict outcomes; it assesses the structural integrity of i
 * **Cognitive Circuit Breaker:** An automated "stop-loss" that halts execution if the RPN exceeds safety thresholds, preventing catastrophic "silent failures."
 
 This framework ensures that the system is not just "smart," but **accountable and robust** in high-stakes environments.
+
+## Benchmarks
+- Snake (Safety & Autonomy): [benchmarks/snake](benchmarks/snake)
+  - Demonstrates "self-harm = loss" with Critical Path + FMEA gating and Monte Carlo rollouts.
+
+Snake provides a minimal environment where:
+- self-harm has immediate and irreversible consequences,
+- adaptation requires filtering actions through a world model,
+- safe autonomy can be enforced via gating mechanisms.
+
+## Mapping to AGI Pragma
+
+- Branching: evaluate candidate actions (YES/NO feasibility)
+- Critical Path: estimate "death path" probability within a horizon (Monte Carlo)
+- FMEA: risk scoring per action (Severity/Occurrence/Detection)
+- Safety Gate: block actions exceeding RPN threshold
+- Tornado: explain dominant decision drivers
+- Bayes: track recurring hazard rates (trap/death tendencies)
