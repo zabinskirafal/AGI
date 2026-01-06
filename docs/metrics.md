@@ -113,3 +113,18 @@ This ensures reproducibility and auditability.
 
 - BeliefSelfConsistency:
   stability of internal beliefs without peer input
+
+  ## Scope and Limitations
+
+These metrics are designed to evaluate **decision integrity and safety**,
+not task optimality or general intelligence.
+
+They do not measure:
+- long-term knowledge accumulation,
+- semantic understanding,
+- transfer learning across domains.
+
+Their purpose is to assess whether an autonomous system:
+- avoids catastrophic actions,
+- maintains control under uncertainty,
+- produces auditable decision traces.
