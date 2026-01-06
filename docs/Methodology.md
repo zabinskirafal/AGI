@@ -1,53 +1,77 @@
 # Methodology
 
-AGI Pragma is a research framework designed to evaluate adaptive
-intelligence under dynamically changing environment rules.
+AGI Pragma is a research framework for decision intelligence under dynamic and
+uncertain environments.
 
-The framework focuses on robustness, independent reasoning,
-and adaptability rather than static performance optimization.
-
----
-
-## Core Principles
-
-1. Dynamic Environment Rules  
-   Environment rules may change unpredictably during execution,
-   including physical laws, causal relations, or reward structures.
-
-2. Decision Branching  
-   Agents explore decision spaces using explicit branching
-   (e.g. YES / NO), rather than relying solely on gradient optimization.
-
-3. Probabilistic Belief Updating  
-   Agents update internal beliefs using Bayesian inference
-   based on observed outcomes.
-
-4. Robustness Evaluation  
-   Performance is evaluated across many stochastic realizations
-   using Monte Carlo simulation.
-
-5. Sensitivity Analysis  
-   Tornado analysis is used to identify which environment parameters
-   have the highest impact on outcomes.
-
-6. Collaboration and Forced Independence  
-   Agents alternate between collaborative and isolated modes
-   to validate independent reasoning capability.
+It does not aim to replicate human cognition, consciousness, or emotions.
+Instead, it formalizes **human-like adaptive decision mechanisms**:
+filtering reality, managing risk, and updating beliefs before acting.
 
 ---
 
-## Evaluation
+## Core Assumption
 
-Evaluation metrics are defined in
-[metrics.md](metrics.md).
+Intelligent behavior does not require evaluating all possible outcomes.
+It requires **systematic reduction of the decision space** to what is:
+
+- plausible,
+- relevant,
+- and safe in a given context.
+
+AGI Pragma operationalizes this principle through a structured decision pipeline.
 
 ---
 
-## Reproducibility
+## Decision Pipeline
 
-Experiments should be conducted with:
-- fixed random seeds,
-- logged environment parameters,
-- clearly reported Monte Carlo sample sizes.
+Each decision follows the same ordered stages:
 
-This ensures auditability and reproducibility of results.
+### 1. Branching
+- Enumerate feasible actions.
+- Exclude physically or logically impossible actions.
+
+### 2. Critical Path Estimation
+- Monte Carlo rollouts estimate:
+  - probability of catastrophic failure within a finite horizon,
+  - probability of entering a trap or dead-end,
+  - expected steps until failure.
+- This approximates whether an action lies on a **critical path** to loss.
+
+### 3. Risk Assessment (FMEA)
+- Failure modes are evaluated using:
+  - Severity (S),
+  - Occurrence (O),
+  - Detection difficulty (D).
+- A Risk Priority Number is computed:  
+  **RPN = S × O × D**
+
+### 4. Decision Integrity Gate
+- Actions exceeding a risk threshold are blocked.
+- This prevents catastrophic behavior *before execution*.
+
+### 5. Circuit Breaker
+- Autonomy is dynamically constrained based on risk:
+  - OK → WARN → SLOW → STOP
+
+### 6. Decision Selection
+- Among allowed actions, utility balances:
+  - survival probability,
+  - progress toward goals,
+  - residual risk.
+
+### 7. Belief Update
+- Bayesian trackers update internal estimates of hazard rates
+  (e.g. trap likelihood, near-death frequency).
+
+---
+
+## Design Philosophy
+
+AGI Pragma prioritizes:
+
+- robustness over maximal reward,
+- interpretability over opaque optimization,
+- prevention over post-hoc correction.
+
+The methodology is domain-agnostic and applicable to:
+simulation, decision-support systems, and controlled autonomous agents.
