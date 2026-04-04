@@ -1,0 +1,29 @@
+cff-version: 3.0.1
+message: "If you use this work, please cite it as below."
+title: "AGI Pragma: A Decision Intelligence Framework for Controlled Autonomy"
+version: "3.0.0"
+date-released: 2026-01-06
+authors:
+  - family-names: "Zabinski"
+    given-names: "Rafal"
+abstract: >-
+  AGI Pragma is a research framework for risk-aware and explainable
+  decision intelligence under uncertainty.
+  It introduces a Decision Integrity Layer that integrates
+  Critical Path estimation, FMEA-based risk assessment (RPN),
+  circuit breakers for controlled autonomy, and Bayesian belief updating.
+  The framework focuses on preventing catastrophic decisions
+  through pre-action risk gating and auditable decision processes.
+license: Custom (non-commercial free, commercial by agreement)
+repository-code: "https://github.com/zabinskirafal/AGI"
+keywords:
+  - decision intelligence
+  - AI safety
+  - controlled autonomy
+  - autonomous systems
+  - risk-aware decision-making
+  - FMEA
+  - critical path analysis
+  - Bayesian inference
+  - explainable AI
+  - AGI

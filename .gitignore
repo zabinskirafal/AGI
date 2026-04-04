@@ -1,0 +1,79 @@
+# ───────────────────────────────
+# UNITY – najważniejsze (zawsze)
+# ───────────────────────────────
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# Asset cache & meta garbage
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Package Manager backups
+Packages/manifest.json.bak
+Packages/packages-lock.json.bak
+
+# JetBrains Rider / VS Code
+.idea/
+*.iml
+.vscode/
+
+# MacOS / Windows
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ───────────────────────────────
+# ML-AGENTS SPECIFIC
+# ───────────────────────────────
+results/
+summaries/
+runs/
+*.onnx
+*.nn
+*.tensor
+*.pth
+
+# ───────────────────────────────
+# DUŻE PLIKI MEDIALNE (nie wrzucamy do Git)
+# ───────────────────────────────
+*.mp4
+*.mov
+*.avi
+*.gif
+*.wav
+*.obj
+*.fbx
+*.blend
+*.zip
+*.rar
+*.7z
+*.tgz
+
+# ───────────────────────────────
+# AGI SANDBOX – nasze wyjątki (żeby coś jednak wrzucać)
+# ───────────────────────────────
+# Zostawiamy tylko to, co naprawdę chcemy wersjonować
+!/Docs/
+!/Docs/screenshots/
+!/Assets/StreamingAssets/.gitkeep   # pusty plik żeby folder istniał
+
+# ───────────────────────────────
+# KONIEC – wszystko powyżej wrzuć w całości
+# ───────────────────────────────

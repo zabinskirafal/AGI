@@ -1,0 +1,11 @@
+{
+  "seed": 0,
+  "steps": 158,
+  "score": 20,
+  "alive": false,
+  "total_reward": 88.6299999999998,
+  "final_bayes": {
+    "trap_rate_mean": 0.01875,
+    "death_rate_mean": 0.99375
+  }
+}
