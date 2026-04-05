@@ -21,16 +21,16 @@ filtering reality, assessing risk, and updating beliefs **before acting**.
 ## What AGI Pragma Is / Is Not
 
 ### AGI Pragma IS
-- a methodology-first framework for risk-aware autonomy,
-- a **Decision Intelligence Core (DIC)** built around explicit decision gates,
-- a research artifact with reproducible benchmarks and auditable traces,
-- a foundation for safety-oriented autonomous systems.
+- a methodology-first framework for risk-aware autonomy
+- a **Decision Intelligence Core (DIC)** built around explicit decision gates
+- a research artifact with reproducible benchmarks and auditable traces
+- a foundation for safety-oriented autonomous systems
 
 ### AGI Pragma IS NOT
-- a human-like AGI,
-- a black-box learning system,
-- a reward-maximization benchmark,
-- a production-ready general intelligence.
+- a human-like AGI
+- a black-box learning system
+- a reward-maximization benchmark
+- a production-ready general intelligence
 
 ---
 
@@ -79,35 +79,35 @@ See: [docs/safety.md](docs/safety.md)
 
 ### v1.0 — 50 episodes (2026-04-05)
 
-| Metric | Value |
-|---|---|
-| Average score | 22.8 |
-| Min / Max score | 9 / 33 |
-| Average reward | 102.4 |
-| Average steps | 201 |
-| Survived to step limit | 2/50 |
-| Scores ≥ 25 | 21/50 (42%) |
-| Scores < 15 | 4/50 (8%) |
+| Metric                 | Value         |
+|------------------------|---------------|
+| Average score          | 22.8          |
+| Min / Max score        | 9 / 33        |
+| Average reward         | 102.4         |
+| Average steps          | 201           |
+| Survived to step limit | 2/50          |
+| Scores ≥ 25            | 21/50 (42%)   |
+| Scores < 15            | 4/50 (8%)     |
 
 ### v0.1 — 10 episodes (2026-04-04) — initial run
 
-| Metric | Value |
-|---|---|
-| Average score | 25.0 |
-| Min / Max score | 18 / 33 |
-| Average reward | 113.1 |
-| Average steps | 214 |
-| Survived to step limit | 0/10 |
+| Metric                 | Value         |
+|------------------------|---------------|
+| Average score          | 25.0          |
+| Min / Max score        | 18 / 33       |
+| Average reward         | 113.1         |
+| Average steps          | 214           |
+| Survived to step limit | 0/10          |
 
 > Note: v0.1 used only 10 seeds — higher average reflects small sample size.
 > v1.0 with 50 seeds gives a more reliable picture of agent behavior.
 
 ### Key finding — passive vs active agent
 
-| Config | Avg score | Avg reward |
-|---|---|---|
-| dist weight = 0.2 (passive) | 0.4 | ~0 |
-| dist weight = 1.5 (active) | 22.8 | 102.4 |
+| Config                      | Avg score | Avg reward |
+|-----------------------------|-----------|------------|
+| dist weight = 0.2 (passive) | 0.4       | ~0         |
+| dist weight = 1.5 (active)  | 22.8      | 102.4      |
 
 **One parameter change produced a 57× improvement in score.**
 
@@ -120,7 +120,7 @@ The agent accepts risk to pursue goals and dies actively, not passively.
 This confirms the core AGI Pragma trade-off:  
 **safety ≠ passivity. Controlled risk is required for goal achievement.**
 
-Run:
+To run the benchmark (50 episodes, results written to `artifacts/snake/`):
 ```bash
 python3 -m benchmarks.snake.run
 ```
@@ -137,10 +137,10 @@ See: [docs/Methodology.md](docs/Methodology.md)
 
 ## Reproducibility
 
-Benchmark runs produce:
-- decision-level logs (JSONL),
-- episode summaries (JSON),
-- reproducible configurations.
+Each benchmark run produces:
+- decision-level logs (JSONL)
+- episode summaries (JSON)
+- reproducible configurations
 
 ---
 
@@ -149,8 +149,8 @@ Benchmark runs produce:
 **ChaosGym / Reverse Reality Sandbox** — physics-breaking simulation environment
 designed to stress-test AGI Pragma's decision integrity under non-stationary rules.
 
-- [AGI-Development](https://github.com/zabinskirafal/AGI-Development)
-- [developmental-agi-sandbox](https://github.com/zabinskirafal/developmental-agi-sandbox)
+- [AGI-Development](https://github.com/zabinskirafal/AGI-Development) — iterative development history and experimental branches of the AGI Pragma framework
+- [developmental-agi-sandbox](https://github.com/zabinskirafal/developmental-agi-sandbox) — Unity-based reverse-physics sandbox environment for testing AGI Pragma under non-stationary world rules
 
 ---
 
@@ -162,8 +162,8 @@ designed to stress-test AGI Pragma's decision integrity under non-stationary rul
 
 **Commercial use:** requires a separate written agreement with the author.
 
-📧 zabinskirafal@outlook.com  
-🔗 https://www.linkedin.com/in/zabinskirafal
+zabinskirafal@outlook.com  
+https://www.linkedin.com/in/zabinskirafal
 
 ---
 
@@ -171,8 +171,9 @@ designed to stress-test AGI Pragma's decision integrity under non-stationary rul
 
 Current version: **v3.0.0**
 
-AGI Pragma is an active research program, not a finished product.  
-Future work: additional benchmarks, stronger baselines, formal evaluation protocols.
+AGI Pragma is an active research program, not a finished product.
+
+Future work includes additional benchmarks, stronger baselines, and formal evaluation protocols.
 
 ---
 
