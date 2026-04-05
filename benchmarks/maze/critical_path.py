@@ -71,6 +71,10 @@ def critical_path_estimate(
                 steps_sum += t + 1
                 break
         else:
+            # Depth exhausted without reaching the goal — this IS a timeout signal.
+            # The rollout failed to find the goal within the horizon, which means
+            # this action is on a path unlikely to solve the maze in time.
+            timed_out = True
             steps_sum += depth
 
         if timed_out:
