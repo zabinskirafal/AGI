@@ -39,14 +39,18 @@ class PragmaMazeAgent:
         depth: int = 50,
         seed: int = 0,
         circuit_breaker_config: CircuitBreakerConfig | None = None,
+        priors: dict | None = None,
     ):
         self.fmea_rpn_threshold = fmea_rpn_threshold
         self.rollouts = rollouts
         self.depth = depth
         self.seed = seed
 
-        self.dead_end_tracker = BetaTracker(1, 1)
-        self.timeout_tracker = BetaTracker(1, 1)
+        p = priors or {}
+        dead_end_a, dead_end_b = p.get("dead_end_rate", (1.0, 1.0))
+        timeout_a,  timeout_b  = p.get("timeout_rate",  (1.0, 1.0))
+        self.dead_end_tracker = BetaTracker(dead_end_a, dead_end_b)
+        self.timeout_tracker  = BetaTracker(timeout_a,  timeout_b)
 
         self.circuit_breaker = CircuitBreaker(circuit_breaker_config)
 

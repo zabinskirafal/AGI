@@ -43,14 +43,18 @@ class PragmaGridworldAgent:
         depth:                 int = 50,
         seed:                  int = 0,
         circuit_breaker_config: CircuitBreakerConfig | None = None,
+        priors: dict | None = None,
     ):
         self.fmea_rpn_threshold = fmea_rpn_threshold
         self.rollouts           = rollouts
         self.depth              = depth
         self.seed               = seed
 
-        self.collision_tracker = BetaTracker(1, 1)
-        self.trap_tracker      = BetaTracker(1, 1)
+        p = priors or {}
+        collision_a, collision_b = p.get("collision_rate", (1.0, 1.0))
+        trap_a,      trap_b      = p.get("trap_rate",      (1.0, 1.0))
+        self.collision_tracker = BetaTracker(collision_a, collision_b)
+        self.trap_tracker      = BetaTracker(trap_a,      trap_b)
 
         self.circuit_breaker = CircuitBreaker(circuit_breaker_config)
 

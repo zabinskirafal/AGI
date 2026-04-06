@@ -1,9 +1,12 @@
 import json
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 from .snake_env import SnakeEnv
 from .pragma_agent import PragmaSnakeAgent
 from .artifacts import ArtifactWriter
+from core.episodic_memory import EpisodicMemory
+
+MEMORY_PATH = "artifacts/snake/memory.json"
 
 
 def run_episode(
@@ -13,6 +16,7 @@ def run_episode(
     depth: int = 25,
     rpn_threshold: int = 240,
     log: bool = False,
+    priors: dict | None = None,
 ) -> Dict[str, Any]:
 
     env = SnakeEnv(width=10, height=10, seed=seed)
@@ -21,6 +25,7 @@ def run_episode(
         rollouts=rollouts,
         depth=depth,
         seed=seed,
+        priors=priors,
     )
 
     env.reset()
@@ -70,8 +75,12 @@ def run_episode(
         "alive": env.alive,
         "total_reward": total_reward,
         "final_bayes": {
-            "trap_rate_mean": agent.trap_tracker.mean,
+            "trap_rate_mean":  agent.trap_tracker.mean,
             "death_rate_mean": agent.death_tracker.mean,
+        },
+        "bayes_state": {
+            "trap_rate":  {"a": agent.trap_tracker.a,  "b": agent.trap_tracker.b},
+            "death_rate": {"a": agent.death_tracker.a, "b": agent.death_tracker.b},
         },
     }
 
@@ -80,7 +89,18 @@ def run_episode(
 
 
 if __name__ == "__main__":
-    results: List[Dict[str, Any]] = [
-        run_episode(seed=i, log=False) for i in range(10)
-    ]
+    memory = EpisodicMemory(MEMORY_PATH)
+    priors = memory.load()
+    print(f"Episodic memory: {memory.describe(priors)}")
+
+    results: List[Dict[str, Any]] = []
+    running_priors = priors
+    for i in range(50):
+        summary = run_episode(seed=i, log=False, priors=running_priors)
+        results.append(summary)
+        running_priors = memory.extract(summary["bayes_state"])
+
+    memory.save(running_priors)
+    print(f"Memory saved → {MEMORY_PATH}")
+    print(f"Final priors:   {memory.describe(running_priors)}")
     print(json.dumps(results, indent=2))

@@ -4,6 +4,9 @@ from typing import Any, Dict, List
 from .gridworld_env import GridworldEnv
 from .pragma_agent import PragmaGridworldAgent
 from .artifacts import ArtifactWriter
+from core.episodic_memory import EpisodicMemory
+
+MEMORY_PATH = "artifacts/gridworld/memory.json"
 
 
 def run_episode(
@@ -13,6 +16,7 @@ def run_episode(
     depth:         int  = 50,
     rpn_threshold: int  = 240,
     log:           bool = False,
+    priors:        dict | None = None,
 ) -> Dict[str, Any]:
 
     env   = GridworldEnv(seed=seed)
@@ -21,6 +25,7 @@ def run_episode(
         rollouts=rollouts,
         depth=depth,
         seed=seed,
+        priors=priors,
     )
 
     env.reset()
@@ -74,6 +79,10 @@ def run_episode(
             "collision_rate_mean": agent.collision_tracker.mean,
             "trap_rate_mean":      agent.trap_tracker.mean,
         },
+        "bayes_state": {
+            "collision_rate": {"a": agent.collision_tracker.a, "b": agent.collision_tracker.b},
+            "trap_rate":      {"a": agent.trap_tracker.a,      "b": agent.trap_tracker.b},
+        },
     }
 
     writer.write_summary(summary)
@@ -81,9 +90,20 @@ def run_episode(
 
 
 if __name__ == "__main__":
-    results: List[Dict[str, Any]] = [
-        run_episode(seed=i, log=False) for i in range(50)
-    ]
+    memory = EpisodicMemory(MEMORY_PATH)
+    priors = memory.load()
+    print(f"Episodic memory: {memory.describe(priors)}")
+
+    results: List[Dict[str, Any]] = []
+    running_priors = priors
+    for i in range(50):
+        summary = run_episode(seed=i, log=False, priors=running_priors)
+        results.append(summary)
+        running_priors = memory.extract(summary["bayes_state"])
+
+    memory.save(running_priors)
+    print(f"Memory saved → {MEMORY_PATH}")
+    print(f"Final priors:   {memory.describe(running_priors)}")
 
     solved    = sum(1 for r in results if r["reached_goal"])
     killed    = sum(1 for r in results if not r["reached_goal"] and r["steps"] < 300)

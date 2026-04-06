@@ -26,14 +26,18 @@ class PragmaSnakeAgent:
         depth: int = 25,
         seed: int = 0,
         circuit_breaker_config: CircuitBreakerConfig | None = None,
+        priors: dict | None = None,
     ):
         self.fmea_rpn_threshold = fmea_rpn_threshold
         self.rollouts = rollouts
         self.depth = depth
         self.seed = seed
 
-        self.trap_tracker = BetaTracker(1, 1)
-        self.death_tracker = BetaTracker(1, 1)
+        p = priors or {}
+        trap_a,  trap_b  = p.get("trap_rate",  (1.0, 1.0))
+        death_a, death_b = p.get("death_rate", (1.0, 1.0))
+        self.trap_tracker  = BetaTracker(trap_a,  trap_b)
+        self.death_tracker = BetaTracker(death_a, death_b)
 
         self.circuit_breaker = CircuitBreaker(
             circuit_breaker_config or CircuitBreakerConfig()

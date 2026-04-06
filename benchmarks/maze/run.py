@@ -4,6 +4,9 @@ from typing import Any, Dict, List
 from .maze_env import MazeEnv
 from .pragma_agent import PragmaMazeAgent
 from .artifacts import ArtifactWriter
+from core.episodic_memory import EpisodicMemory
+
+MEMORY_PATH = "artifacts/maze/memory.json"
 
 
 def run_episode(
@@ -13,6 +16,7 @@ def run_episode(
     depth: int = 50,
     rpn_threshold: int = 240,
     log: bool = False,
+    priors: dict | None = None,
 ) -> Dict[str, Any]:
 
     env = MazeEnv(seed=seed)
@@ -21,6 +25,7 @@ def run_episode(
         rollouts=rollouts,
         depth=depth,
         seed=seed,
+        priors=priors,
     )
 
     env.reset()
@@ -74,7 +79,11 @@ def run_episode(
         "total_reward": total_reward,
         "final_bayes": {
             "dead_end_rate_mean": agent.dead_end_tracker.mean,
-            "timeout_rate_mean": agent.timeout_tracker.mean,
+            "timeout_rate_mean":  agent.timeout_tracker.mean,
+        },
+        "bayes_state": {
+            "dead_end_rate": {"a": agent.dead_end_tracker.a, "b": agent.dead_end_tracker.b},
+            "timeout_rate":  {"a": agent.timeout_tracker.a,  "b": agent.timeout_tracker.b},
         },
     }
 
@@ -83,13 +92,24 @@ def run_episode(
 
 
 if __name__ == "__main__":
-    results: List[Dict[str, Any]] = [
-        run_episode(seed=i, log=False) for i in range(50)
-    ]
+    memory = EpisodicMemory(MEMORY_PATH)
+    priors = memory.load()
+    print(f"Episodic memory: {memory.describe(priors)}")
+
+    results: List[Dict[str, Any]] = []
+    running_priors = priors
+    for i in range(50):
+        summary = run_episode(seed=i, log=False, priors=running_priors)
+        results.append(summary)
+        running_priors = memory.extract(summary["bayes_state"])
+
+    memory.save(running_priors)
+    print(f"Memory saved → {MEMORY_PATH}")
+    print(f"Final priors:   {memory.describe(running_priors)}")
 
     solved = sum(1 for r in results if r["reached_goal"])
     scores = [r["score"] for r in results if r["reached_goal"]]
-    steps = [r["steps"] for r in results]
+    steps  = [r["steps"] for r in results]
 
     print(f"Solved: {solved}/50")
     if scores:
