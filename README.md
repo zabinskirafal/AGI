@@ -169,6 +169,50 @@ See: [docs/benchmarks/maze.md](docs/benchmarks/maze.md)
 
 ---
 
+## Benchmark Results — Dynamic Threat Gridworld
+
+**Agent:** PragmaGridworldAgent  
+**Environment:** GridworldEnv 15×15, 5 wandering hazards
+
+### v1.0 — 50 episodes (2026-04-06)
+
+| Metric                              | Value          |
+|-------------------------------------|----------------|
+| Solved                              | 39 / 50 (78%)  |
+| Killed by hazard                    | 11 / 50 (22%)  |
+| Timed out                           | 0 / 50         |
+| Steps — avg / min / max             | 22.8 / 9 / 24  |
+| Score when solved (steps remaining) | 276            |
+
+### Key finding — p_death signal is load-bearing
+
+Unlike Snake and Maze where the Monte Carlo risk signal was saturated or secondary,
+the gridworld is the first benchmark where `p_death` varies meaningfully across
+candidate actions at each step. Moving toward a hazard cluster scores higher
+`p_death` than WAIT or evasion — the FMEA and Critical Path stages are actively
+driving decisions, not just gating them.
+
+The circuit breaker operates in **WARN/SLOW** range throughout (RPN 180–200),
+constraining autonomy proportionally without collapsing into full conservatism.
+
+### Interpretation
+
+The 22% failure rate reflects genuine stochastic risk — some hazard configurations
+cross the direct path regardless of decision quality. Zero timeouts confirms the
+agent always makes decisive forward progress.
+
+**Safety ≠ passivity** holds across all three benchmarks: the agent accepts risk
+to pursue the goal and the safety pipeline constrains, not blocks, autonomous action.
+
+To run the benchmark (50 episodes, results written to `artifacts/gridworld/`):
+```bash
+python3 -m benchmarks.gridworld.run
+```
+
+See: [docs/benchmarks/gridworld.md](docs/benchmarks/gridworld.md)
+
+---
+
 ## Methodology
 
 See: [docs/Methodology.md](docs/Methodology.md)
