@@ -380,7 +380,63 @@ period where prior calibration can materially change early decisions, and
 in fixed-seed 50-episode benchmarks but are present in real deployments with
 drifting environments and short session budgets.
 
-% ── 5. Lessons Learned ────────────────────────────────────────────────────────
+% ── 5. Real-World Application ─────────────────────────────────────────────────
+\section{Real-World Application}
+\label{sec:application}
+
+We implemented the DIC in two interactive demo systems and one REST service to
+validate its behavior beyond grid-world simulation.
+Each system instantiates the same seven-stage pipeline with a domain-specific
+FMEA table, critical path analysis, and reversibility dimension
+($\mathrm{RPN} = S \times O \times D \times R$, threshold $\tau = 2400$).
+
+\subsection{File Operations Agent}
+
+An LLM proposes filesystem actions (\textsc{read}, \textsc{write}, \textsc{delete})
+inside a sandboxed directory. Stage~1 blocks any path that escapes the sandbox
+or contains traversal components. FMEA failure modes are parameterised by
+reversibility: write-new ($R=3$), write-overwrite ($R=8$), delete ($R=10$).
+Occurrence is driven by the session-level Beta tracker.
+
+In a five-step mock session the pipeline approved \textsc{write}~\texttt{plan.md}
+(RPN~$420$, dominant mode \textit{unintended\_write}: $S{=}4$, $O{=}5$, $D{=}7$,
+$R{=}3$) and blocked \textsc{delete}~\texttt{temp.txt} (RPN~$3150$, dominant mode
+\textit{wrong\_file\_deleted}: $S{=}9$, $O{=}5$, $D{=}7$, $R{=}10$).
+The blocking failure mode is not permanent data loss (detectable, $D{=}2$) but
+\textit{path confusion}: an LLM may hallucinate the target filename and the error
+is hard to catch before execution ($D{=}7$).
+
+\subsection{Database Operations Agent}
+
+An LLM proposes SQL operations (\textsc{select}, \textsc{insert}, \textsc{update},
+\textsc{delete\_row}, \textsc{drop\_table}) against a SQLite database.
+Stage~1 blocks system tables (\texttt{sqlite\_master} etc.)\ and rejects table
+names containing injection-relevant characters.
+Reversibility spans $R{=}1$ (\textsc{select}) to $R{=}10$ (\textsc{drop\_table}).
+
+A four-step mock session approved \textsc{select} (RPN~$100$), \textsc{insert}
+(RPN~$525$), and \textsc{update} with a \texttt{WHERE} condition
+(RPN~$1512$, dominant mode \textit{wrong\_rows\_updated}: $S{=}7$, $O{=}6$,
+$D{=}6$, $R{=}6$). \textsc{drop\_table} was blocked at RPN~$3780$ (dominant mode
+\textit{cascade\_failure}: $S{=}9$, $O{=}7$, $D{=}6$, $R{=}10$).
+Cascade failure scores higher than schema destruction because downstream
+application references break silently ($D{=}6$) rather than immediately ($D{=}1$).
+The database was preserved; the four-row \texttt{users} table remained intact.
+
+\subsection{Decision Governance REST API}
+
+The file-operations DIC is exposed as a stateful FastAPI service.
+\texttt{POST /evaluate} accepts a \texttt{\{op, path, content, reason\}} payload
+and returns \texttt{approved}, \texttt{block\_reason}, \texttt{max\_rpn},
+\texttt{utility}, and the full seven-stage \texttt{stage\_log}.
+The governor instance persists across requests; the Beta tracker and circuit
+breaker accumulate session state identically to the interactive demo.
+\texttt{GET /state} exposes the live session state; \texttt{POST /reset} returns
+the governor to $\mathrm{Beta}(1,1)$.
+The API pattern generalises directly to any domain with a DIC pipeline: replace
+the FMEA table and critical path model, expose the same four routes.
+
+% ── 6. Lessons Learned ────────────────────────────────────────────────────────
 \section{Lessons Learned}
 \label{sec:lessons}
 
@@ -415,7 +471,7 @@ aggregate. The Gridworld environment is the first in this suite where
 $p_{\mathrm{death}}$ is genuinely differentiating: moving toward a hazard cluster
 has measurably higher $p_{\mathrm{death}}$ than WAIT or evasion.
 
-% ── 6. Conclusion ─────────────────────────────────────────────────────────────
+% ── 7. Conclusion ─────────────────────────────────────────────────────────────
 \section{Conclusion}
 \label{sec:conclusion}
 
