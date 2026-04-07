@@ -154,11 +154,15 @@ All experiments use $N = 200$ rollouts and depth $d = 25$ (Snake) or $d = 50$
 Each candidate receives a Risk Priority Number:
 \begin{equation}
   \mathrm{RPN} = \mathrm{Severity} \times \mathrm{Occurrence} \times \mathrm{Detection}
+              \times \mathrm{Reversibility}
   \label{eq:rpn}
 \end{equation}
 Severity captures consequence magnitude (range 1--10). Occurrence is derived from
 the Monte Carlo estimates. Detection captures how silently a failure mode manifests
---- silent failures receive Detection $= 1$ (highest penalty). Each domain defines
+--- silent failures receive Detection $= 1$ (highest penalty). Reversibility
+captures how easily an action's effects can be undone: $R = 0$ denotes a fully
+reversible action (no lasting state change), $R = 10$ denotes a fully irreversible
+one (e.g.\ permanent deletion, schema destruction). Each domain defines
 its own FMEA table. The maximum RPN across all failure modes is used for gating.
 
 \paragraph{Stage 4 --- Decision Integrity Gate.}
