@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 
 from .gridworld_env import GridworldEnv, ACTIONS
@@ -6,8 +7,11 @@ from .gridworld_env import GridworldEnv, ACTIONS
 @dataclass
 class CriticalPathResult:
     p_death:               float  # fraction of rollouts ending in hazard collision or timeout
-    p_trap:                float  # fraction of rollouts where agent was surrounded (≥3 neighbours occupied)
-    expected_steps_to_death: float
+    p_trap:                float  # fraction of rollouts where agent was surrounded (≥3 neighbours)
+    expected_steps_to_death: float  # mean steps until death (depth if solved/survived)
+    variance_death:        float  # p_death * (1 - p_death)
+    p95_death:             float  # upper 95% Wilson CI on p_death
+    cvar_death:            float  # mean steps-to-death in earliest-dying 5% of rollouts
 
 
 def critical_path_estimate(
@@ -18,76 +22,62 @@ def critical_path_estimate(
     seed_base: int = 0,
 ) -> CriticalPathResult:
     """
-    Monte Carlo estimate of risk for a candidate action in the dynamic gridworld.
+    Monte Carlo estimate of risk for a candidate gridworld action.
 
     Unlike Snake and Maze, hazards move each step inside the rollout, so p_death
-    captures genuine stochastic collision risk — not just a saturated timeout signal.
-    A rollout is a failure if:
-      - the agent contacts a hazard (collision death), or
-      - the rollout depth is exhausted without reaching the goal (timeout).
-
-    p_trap: fraction of rollouts where the agent found itself surrounded —
-    3 or more of the 4 orthogonal neighbours occupied by hazards simultaneously.
-    Surrounded states are not always fatal immediately but strongly predict
-    imminent death and forced bad moves.
-
-    Rollout policy: uniform random over safe actions (no wall / no current hazard).
-    If no safe actions exist, the agent is trapped — counted as both death and trap.
+    captures genuine stochastic collision risk. Tail risk metrics quantify the
+    shape of the steps-to-death distribution across rollouts.
     """
     deaths    = 0
     traps     = 0
-    steps_sum = 0.0
+    steps_per_rollout: list[float] = []
 
     for i in range(rollouts):
         sim    = env.clone(seed=seed_base + i)
         result = sim.step(first_action)
 
         if result.reached_goal:
-            steps_sum += 1
+            steps_per_rollout.append(1.0)
             continue
 
         if not result.alive:
-            # Killed on first action (walked into hazard)
-            deaths    += 1
-            steps_sum += 1
+            deaths += 1
+            steps_per_rollout.append(1.0)
             continue
 
-        died      = False
-        trapped   = False
+        died    = False
+        trapped = False
 
         for t in range(1, depth):
-            # Check surrounded condition before choosing action
             hpos = sim.hazard_positions()
             r, c = sim.agent_pos
             occupied_neighbours = sum(
-                1 for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]
-                if (r+dr, c+dc) in hpos
+                1 for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]
+                if (r + dr, c + dc) in hpos
             )
             if occupied_neighbours >= 3:
                 trapped = True
 
             safe = sim.safe_actions()
             if not safe:
-                # Fully enclosed by hazards — imminent death
-                trapped   = True
-                died      = True
-                steps_sum += t
+                trapped = True
+                died    = True
+                steps_per_rollout.append(float(t))
                 break
 
             action = sim.rng.choice(safe)
             r      = sim.step(action)
 
             if r.reached_goal:
-                steps_sum += t + 1
+                steps_per_rollout.append(float(t + 1))
                 break
             if not r.alive:
-                died      = True
-                steps_sum += t + 1
+                died = True
+                steps_per_rollout.append(float(t + 1))
                 break
         else:
-            # Depth exhausted without reaching goal — count as timeout failure
-            died      = True
-            steps_sum += depth
+            died = True
+            steps_per_rollout.append(float(depth))
 
         if died:
             deaths += 1
@@ -96,10 +86,26 @@ def critical_path_estimate(
 
     p_death  = deaths / max(1, rollouts)
     p_trap   = traps  / max(1, rollouts)
-    expected = steps_sum / max(1, rollouts)
+    expected = sum(steps_per_rollout) / max(1, rollouts)
+
+    variance_death = p_death * (1.0 - p_death)
+
+    z = 1.645
+    n = rollouts
+    denom  = 1.0 + z * z / n
+    centre = p_death + z * z / (2 * n)
+    spread = z * math.sqrt(max(0.0, p_death * (1 - p_death) / n + z * z / (4 * n * n)))
+    p95_death = (centre + spread) / denom
+
+    sorted_steps = sorted(steps_per_rollout)
+    cutoff     = max(1, int(0.05 * rollouts))
+    cvar_death = sum(sorted_steps[:cutoff]) / cutoff
 
     return CriticalPathResult(
         p_death=p_death,
         p_trap=p_trap,
         expected_steps_to_death=expected,
+        variance_death=variance_death,
+        p95_death=p95_death,
+        cvar_death=cvar_death,
     )

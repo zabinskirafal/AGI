@@ -99,11 +99,14 @@ class PragmaMazeAgent:
 
             per_action[a] = {
                 "critical_path": {
-                    "p_death":    p_death_adj,
-                    "p_trap":     p_trap_adj,
-                    "mc_p_death": cp.p_death,
-                    "mc_p_trap":  cp.p_trap,
+                    "p_death":               p_death_adj,
+                    "p_trap":                p_trap_adj,
+                    "mc_p_death":            cp.p_death,
+                    "mc_p_trap":             cp.p_trap,
                     "expected_steps_to_death": cp.expected_steps_to_death,
+                    "variance_death":        cp.variance_death,
+                    "p95_death":             cp.p95_death,
+                    "cvar_death":            cp.cvar_death,
                 },
                 "fmea": {k: vars(v) for k, v in table.items()},
                 "max_rpn": m_rpn,
