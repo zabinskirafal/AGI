@@ -31,7 +31,7 @@ def occ_from_prob(p: float) -> int:
     return 10
 
 def fmea_table(
-    p_death_horizon: float,
+    p_death_occ: float,
     p_trap_horizon: float,
     immediate_collision: bool
 ) -> Dict[str, FMEAItem]:
@@ -41,6 +41,9 @@ def fmea_table(
     - Trap = leads to states with no safe actions soon (dead-end)
     Detection meaning:
       1 = easy to detect, 10 = hard to detect
+
+    p_death_occ: probability used for Occurrence scoring of death failure mode.
+                 Pass p95_death (conservative upper CI) for a tighter gate.
     """
     table: Dict[str, FMEAItem] = {}
 
@@ -51,7 +54,8 @@ def fmea_table(
         return table
 
     # Probabilistic death within horizon — irreversible (R=10): death cannot be undone
-    s, o, d, r = 10, occ_from_prob(p_death_horizon), 3, 10
+    # Occurrence uses p95_death (conservative upper CI) for a tighter gate
+    s, o, d, r = 10, occ_from_prob(p_death_occ), 3, 10
     table["prob_death"] = FMEAItem("Death within horizon", s, o, d, r, s*o*d*r)
 
     # Trap risk — partially reversible (R=5): snake body shrinks; some escapes possible

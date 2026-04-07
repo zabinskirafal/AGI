@@ -31,8 +31,8 @@ def occ_from_prob(p: float) -> int:
 
 
 def fmea_table(
-    p_death:    float,
-    p_trap:     float,
+    p_death_occ: float,
+    p_trap:      float,
     immediate_collision: bool = False,
 ) -> Dict[str, FMEAItem]:
     """
@@ -63,7 +63,8 @@ def fmea_table(
         }
 
     # Hazard collision within horizon — irreversible (R=10): death is permanent
-    s_col, o_col, d_col, r_col = 10, occ_from_prob(p_death), 2, 10
+    # Occurrence uses p95_death (conservative upper CI) for a tighter gate
+    s_col, o_col, d_col, r_col = 10, occ_from_prob(p_death_occ), 2, 10
     rpn_col = s_col * o_col * d_col * r_col
 
     # Proximity trap — partially reversible (R=4): WAIT often clears surrounded states

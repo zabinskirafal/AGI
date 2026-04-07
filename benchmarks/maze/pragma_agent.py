@@ -75,11 +75,13 @@ class PragmaMazeAgent:
             )
 
             # Blend MC estimate with Beta tracker mean (episodic memory)
-            p_death_adj = 0.7 * cp.p_death + 0.3 * self.timeout_tracker.mean
-            p_trap_adj  = 0.7 * cp.p_trap  + 0.3 * self.dead_end_tracker.mean
+            p_death_adj   = 0.7 * cp.p_death   + 0.3 * self.timeout_tracker.mean
+            p_trap_adj    = 0.7 * cp.p_trap    + 0.3 * self.dead_end_tracker.mean
+            # Conservative upper CI for Occurrence — tighter gate than mean
+            p95_death_adj = 0.7 * cp.p95_death + 0.3 * self.timeout_tracker.mean
 
             # 3. FMEA
-            table = fmea_table(p_death_adj, p_trap_adj)
+            table = fmea_table(p95_death_adj, p_trap_adj)
             m_rpn = max_rpn(table)
 
             # 5. Circuit Breaker
@@ -101,11 +103,12 @@ class PragmaMazeAgent:
                 "critical_path": {
                     "p_death":               p_death_adj,
                     "p_trap":                p_trap_adj,
+                    "p95_death":             p95_death_adj,
                     "mc_p_death":            cp.p_death,
                     "mc_p_trap":             cp.p_trap,
                     "expected_steps_to_death": cp.expected_steps_to_death,
                     "variance_death":        cp.variance_death,
-                    "p95_death":             cp.p95_death,
+                    "p95_death_raw":         cp.p95_death,
                     "cvar_death":            cp.cvar_death,
                 },
                 "fmea": {k: vars(v) for k, v in table.items()},

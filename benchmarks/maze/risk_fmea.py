@@ -31,7 +31,7 @@ def occ_from_prob(p: float) -> int:
 
 
 def fmea_table(
-    p_timeout: float,
+    p_timeout_occ: float,
     p_dead_end: float,
 ) -> Dict[str, FMEAItem]:
     """
@@ -47,7 +47,8 @@ def fmea_table(
     at the branching stage. All risk here is probabilistic, not immediate.
     """
     # Timeout — near-irreversible (R=9): step budget cannot be recovered
-    s_t, o_t, d_t, r_t = 9, occ_from_prob(p_timeout), 3, 9
+    # Occurrence uses p95_death (conservative upper CI) for a tighter gate
+    s_t, o_t, d_t, r_t = 9, occ_from_prob(p_timeout_occ), 3, 9
     rpn_timeout = s_t * o_t * d_t * r_t
 
     # Dead-end — reversible (R=3): wall hits are no-ops; backtracking always valid
