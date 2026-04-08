@@ -34,6 +34,7 @@ api       = ["fastapi>=0.100.0", "uvicorn>=0.20.0"]
 llm       = ["anthropic>=0.20.0"]
 langgraph = ["langgraph>=0.2.0", "langchain-core>=0.2.0"]
 autogen   = ["pyautogen>=0.7.0"]
+llamaindex = ["llama-index-core>=0.14.0"]
 dev       = ["pytest>=7.0", "pytest-cov"]
 
 [project.urls]
