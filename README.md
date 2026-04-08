@@ -11,41 +11,45 @@
 
 ## Quick Start
 
-### 1 — Python SDK
+### 1 — Install
 
 ```bash
 pip install agi-pragma
 ```
+
+### 2 — Python SDK
 
 ```python
 from agi_pragma import DICGovernor, FileAction, FileOp
 
 gov = DICGovernor()
 
-# WRITE — approved (RPN 504, below threshold)
+# WRITE — approved (RPN 504, below threshold 2400)
 decision = gov.evaluate(FileAction(
     op=FileOp.WRITE, path="plan.md",
     content="project notes", reason="save draft"
 ))
-print(decision.approved, decision.max_rpn)   # True  504
+print(decision.approved, decision.max_rpn)       # True  504
 
 # DELETE — blocked (RPN 3150, exceeds threshold 2400)
 decision = gov.evaluate(FileAction(
     op=FileOp.DELETE, path="users.csv", reason="clean up"
 ))
 print(decision.approved, decision.block_reason)  # False  RPN 3150 ≥ threshold 2400
+
+# Full audit trace — every stage logged
+for stage in decision.stage_log:
+    print(stage["stage"], stage)
 ```
 
-### 2 — REST API
+### 3 — REST API
 
 ```bash
-# Start the server
 pip install "agi-pragma[api]"
 uvicorn demos.dic_api.main:app --reload
 ```
 
 ```bash
-# Evaluate a proposed action
 curl -s -X POST http://localhost:8000/evaluate \
   -H "Content-Type: application/json" \
   -d '{"op": "delete", "path": "users.csv", "reason": "clean up"}' \
@@ -61,7 +65,7 @@ curl -s -X POST http://localhost:8000/evaluate \
 }
 ```
 
-### 3 — LangGraph Integration
+### 4 — LangGraph
 
 ```bash
 pip install "agi-pragma[langgraph]"
@@ -71,7 +75,7 @@ pip install "agi-pragma[langgraph]"
 from langgraph.graph import StateGraph
 from agi_pragma.integrations.langgraph import DICGuardNode, dic_conditional_edge
 
-guard = DICGuardNode()          # wraps DICGovernor; shared across the graph
+guard = DICGuardNode()   # one shared governor across the whole graph
 
 graph = StateGraph(AgentState)
 graph.add_node("agent",     agent_node)
@@ -81,7 +85,7 @@ graph.add_node("tools",     tool_node)
 graph.set_entry_point("agent")
 graph.add_edge("agent", "dic_guard")
 
-# approved → run tools; blocked → back to agent to re-plan
+# approved → execute tools   blocked → agent re-plans
 graph.add_conditional_edges(
     "dic_guard",
     dic_conditional_edge,
@@ -89,7 +93,56 @@ graph.add_conditional_edges(
 )
 ```
 
-See [docs/integrations/langgraph.md](docs/integrations/langgraph.md) for the full usage guide.
+See [docs/integrations/langgraph.md](docs/integrations/langgraph.md).
+
+### 5 — AutoGen
+
+```bash
+pip install "agi-pragma[autogen]"
+```
+
+```python
+from autogen_core.tools import FunctionTool
+from autogen_agentchat.agents import AssistantAgent
+from agi_pragma.integrations.autogen import dic_wrap_tools
+
+# Wrap existing tools — DIC evaluates every call before execution
+safe_tools = dic_wrap_tools([
+    FunctionTool(write_file,  description="Write a file"),
+    FunctionTool(delete_file, description="Delete a file"),
+    FunctionTool(read_file,   description="Read a file"),
+])
+
+agent = AssistantAgent(
+    name="file_agent",
+    model_client=model_client,
+    tools=safe_tools,          # drop-in replacement
+)
+```
+
+See [docs/integrations/autogen.md](docs/integrations/autogen.md).
+
+### 6 — LlamaIndex
+
+```bash
+pip install "agi-pragma[llamaindex]"
+```
+
+```python
+from llama_index.core.agent import ReActAgent
+from llama_index.core.tools import FunctionTool
+from agi_pragma.integrations.llamaindex import dic_wrap_tools
+
+safe_tools = dic_wrap_tools([
+    FunctionTool.from_defaults(fn=write_file,  name="write_file",  description="Write a file"),
+    FunctionTool.from_defaults(fn=delete_file, name="delete_file", description="Delete a file"),
+    FunctionTool.from_defaults(fn=read_file,   name="read_file",   description="Read a file"),
+])
+
+agent = ReActAgent(tools=safe_tools, llm=llm)   # drop-in replacement
+```
+
+See [docs/integrations/llamaindex.md](docs/integrations/llamaindex.md).
 
 ---
 
@@ -141,11 +194,51 @@ Each decision follows a fixed and auditable pipeline:
 **4. Decision Integrity Gate** — actions exceeding risk threshold are blocked before execution.
 
 **5. Circuit Breaker** — autonomy dynamically constrained:
-- OK → WARN → SLOW → STOP
+- OK → WARN → SLOW → STOP → ESCALATE
 
 **6. Decision Selection** — utility balances survival probability, goal progress, residual risk.
 
 **7. Belief Update** — Bayesian trackers update internal hazard estimates.
+
+---
+
+## Circuit Breaker States
+
+The circuit breaker escalates session-wide across all tool calls, not per-action.
+
+| State | Trigger | Effect |
+|-------|---------|--------|
+| **OK** | RPN < 1800 | Action approved normally |
+| **WARN** | RPN ≥ 1800 | Approved with warning logged; 3 consecutive WARNs → SLOW |
+| **SLOW** | RPN ≥ 2200 | Approved with reduced autonomy; 2 consecutive SLOWs → STOP |
+| **STOP** | RPN ≥ 2600 | Action blocked; `approved=False` |
+| **ESCALATE** | 3 consecutive STOPs | All candidates unsafe — `approved=False`, `block_reason="ESCALATE: all actions exceed risk threshold, human confirmation required"` |
+
+ESCALATE is the signal that the agent is stuck: every action it proposes is
+unsafe.  The system stops and waits for human confirmation rather than
+selecting the least-bad option.  The counter resets after ESCALATE fires.
+
+```python
+from agi_pragma import DICGovernor, FileAction, FileOp
+
+gov = DICGovernor()
+
+for path in ["users.csv", "backups.zip", "prod.db"]:   # three consecutive DELETEs
+    d = gov.evaluate(FileAction(op=FileOp.DELETE, path=path, reason="cleanup"))
+    print(d.circuit_breaker.state.value, d.block_reason)
+
+# stop     STOP: RPN 4410 ≥ 2600
+# stop     STOP: RPN 4410 ≥ 2600
+# escalate ESCALATE: all actions exceed risk threshold, human confirmation required
+
+print(gov.escalation_count)   # 1
+```
+
+Run the built-in ESCALATE demo:
+
+```bash
+python3 -m demos.dic_llm.run --mock --scenario escalate
+```
 
 ---
 
