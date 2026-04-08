@@ -30,9 +30,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-api  = ["fastapi>=0.100.0", "uvicorn>=0.20.0"]
-llm  = ["anthropic>=0.20.0"]
-dev  = ["pytest>=7.0", "pytest-cov"]
+api       = ["fastapi>=0.100.0", "uvicorn>=0.20.0"]
+llm       = ["anthropic>=0.20.0"]
+langgraph = ["langgraph>=0.2.0", "langchain-core>=0.2.0"]
+dev       = ["pytest>=7.0", "pytest-cov"]
 
 [project.urls]
 Homepage   = "https://github.com/zabinskirafal/AGI-Pragma-Core"
