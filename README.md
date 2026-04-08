@@ -5,6 +5,90 @@
 
 ---
 
+## Quick Start
+
+### 1 — Python SDK
+
+```bash
+pip install agi-pragma
+```
+
+```python
+from agi_pragma import DICGovernor, FileAction, FileOp
+
+gov = DICGovernor()
+
+# WRITE — approved (RPN 504, below threshold)
+decision = gov.evaluate(FileAction(
+    op=FileOp.WRITE, path="plan.md",
+    content="project notes", reason="save draft"
+))
+print(decision.approved, decision.max_rpn)   # True  504
+
+# DELETE — blocked (RPN 3150, exceeds threshold 2400)
+decision = gov.evaluate(FileAction(
+    op=FileOp.DELETE, path="users.csv", reason="clean up"
+))
+print(decision.approved, decision.block_reason)  # False  RPN 3150 ≥ threshold 2400
+```
+
+### 2 — REST API
+
+```bash
+# Start the server
+pip install "agi-pragma[api]"
+uvicorn demos.dic_api.main:app --reload
+```
+
+```bash
+# Evaluate a proposed action
+curl -s -X POST http://localhost:8000/evaluate \
+  -H "Content-Type: application/json" \
+  -d '{"op": "delete", "path": "users.csv", "reason": "clean up"}' \
+  | python3 -m json.tool
+```
+
+```json
+{
+  "approved": false,
+  "block_reason": "RPN 3150 ≥ threshold 2400",
+  "max_rpn": 3150,
+  "utility": -7.75
+}
+```
+
+### 3 — LangGraph Integration
+
+```bash
+pip install "agi-pragma[langgraph]"
+```
+
+```python
+from langgraph.graph import StateGraph
+from agi_pragma.integrations.langgraph import DICGuardNode, dic_conditional_edge
+
+guard = DICGuardNode()          # wraps DICGovernor; shared across the graph
+
+graph = StateGraph(AgentState)
+graph.add_node("agent",     agent_node)
+graph.add_node("dic_guard", guard)
+graph.add_node("tools",     tool_node)
+
+graph.set_entry_point("agent")
+graph.add_edge("agent", "dic_guard")
+
+# approved → run tools; blocked → back to agent to re-plan
+graph.add_conditional_edges(
+    "dic_guard",
+    dic_conditional_edge,
+    {"approved": "tools", "blocked": "agent"},
+)
+```
+
+See [docs/integrations/langgraph.md](docs/integrations/langgraph.md) for the full usage guide.
+
+---
+
 ## Overview
 
 **AGI Pragma** is an **AI Action Firewall**: a structured pre-execution governance layer that sits between an AI agent and the real world, evaluating every proposed action for risk before it is allowed to execute.
