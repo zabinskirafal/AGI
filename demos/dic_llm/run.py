@@ -13,6 +13,8 @@ Usage:
     python -m demos.dic_llm.run --actor ollama --model llama3.1:70b
     python -m demos.dic_llm.run --actor groq   --model llama-3.1-70b-versatile
     python -m demos.dic_llm.run --mock --scenario escalate
+    python -m demos.dic_llm.run --dic-scenario stress
+    python -m demos.dic_llm.run --dic-scenario catastrophic --mock
 """
 
 import argparse
@@ -31,6 +33,7 @@ from .mock_actor       import MockActor
 from .dic_governor     import DICGovernor, DICDecision
 from .executor         import Executor
 from .file_action      import FileAction, FileOp
+from core.scenario_weights import ALL_SCENARIO_NAMES
 
 # ── Actor factory ────────────────────────────────────────────────────── #
 
@@ -137,9 +140,31 @@ def print_decision(step: int, action: FileAction, d: DICDecision) -> None:
                     f"       {fname:<24} S={s} O={o} D={det} R={r}  RPN={rpn}", DIM
                 ))
 
+        elif stage == "monte_carlo":
+            dmg  = entry["expected_damage"]
+            mult = entry["rpn_multiplier"]
+            bar_w = 16
+            filled = int(dmg * bar_w)
+            bar  = "▓" * filled + "░" * (bar_w - filled)
+            print(_box_line(
+                f"  3b. Monte Carlo       [{entry['scenario']}]  "
+                f"n={entry['n_trials']}"
+            ))
+            print(_box_line(
+                f"       dmg={dmg:.3f} {bar}  ×{mult}  "
+                f"RPN {entry['base_rpn']}→{entry['adjusted_rpn']}", DIM
+            ))
+            print(_box_line(
+                f"       p_cat={entry['p_catastrophic']:.3f}  "
+                f"p_casc={entry['p_cascade']:.3f}  "
+                f"p_undet={entry['p_undetected']:.3f}  "
+                f"det_eff={entry['detection_effectiveness']:.2f}", DIM
+            ))
+
         elif stage == "decision_gate":
             icon = "✗ BLOCKED" if entry["blocked"] else "✓ PASS"
-            print(_box_line(f"  4. Decision Gate   {icon}  ({entry['max_rpn']} vs {entry['threshold']})"))
+            adj  = entry.get("adjusted_rpn", entry["max_rpn"])
+            print(_box_line(f"  4. Decision Gate   {icon}  (adj_rpn={adj} vs {entry['threshold']})"))
 
         elif stage == "circuit_breaker":
             state = entry["state"].upper()
@@ -182,7 +207,7 @@ def print_sandbox_listing(sandbox: Path) -> None:
 
 def run(task: str, max_steps: int = 15, model: str = "claude-haiku-4-5-20251001",
         mock: bool = False, scenario: str = "default",
-        actor: str = "claude") -> None:
+        actor: str = "claude", dic_scenario: str = "normal") -> None:
     sandbox  = Path(__file__).parent / "sandbox"
     sandbox.mkdir(exist_ok=True)
 
@@ -192,13 +217,14 @@ def run(task: str, max_steps: int = 15, model: str = "claude-haiku-4-5-20251001"
     print(f"{BOLD}{CYAN}{'═'*64}{RESET}")
     print(f"  Task:      {task}")
     print(f"  Actor:     {actor_label}")
+    print(f"  Scenario:  {dic_scenario}")
     print(f"  Sandbox:   {sandbox}")
     print(f"  Max steps: {max_steps}")
 
     actor_obj = _build_actor(actor, model, scenario, mock)
     if not mock:
         print(f"  Model:     {getattr(actor_obj, 'model', model)}")
-    governor  = DICGovernor()
+    governor  = DICGovernor(scenario=dic_scenario)
     executor  = Executor(sandbox_root=sandbox)
 
     actor_obj.start_task(task)
@@ -271,8 +297,16 @@ if __name__ == "__main__":
                         help="Use scripted mock actor (no API key required)")
     parser.add_argument("--scenario",  default="default",
                         choices=["default", "escalate"],
-                        help="Mock scenario: 'default' or 'escalate'")
+                        help="Mock actor script: 'default' or 'escalate'")
+    parser.add_argument("--dic-scenario", default="normal",
+                        choices=ALL_SCENARIO_NAMES,
+                        dest="dic_scenario",
+                        help=(
+                            "DIC operational scenario for Monte Carlo weighting: "
+                            "normal (default), stress, extreme, catastrophic"
+                        ))
     args = parser.parse_args()
 
     run(task=args.task, max_steps=args.max_steps, model=args.model,
-        mock=args.mock, scenario=args.scenario, actor=args.actor)
+        mock=args.mock, scenario=args.scenario, actor=args.actor,
+        dic_scenario=args.dic_scenario)

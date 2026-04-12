@@ -7,11 +7,15 @@ from .risk_fmea import fmea_table, max_rpn, FMEAItem
 from .critical_path import reversibility_profile, CriticalPathResult
 from .circuit_breaker import CircuitBreaker, CircuitBreakerConfig, CircuitBreakerResult
 from .bayes import BetaTracker
+from core.scenario_weights import (
+    ScenarioConfig, MonteCarloResult,
+    get_scenario, monte_carlo_rollout,
+)
 
 
 SANDBOX_ROOT = Path(__file__).parent / "sandbox"
 
-# Actions with max_rpn above this are blocked
+# Default RPN threshold (overridden per-scenario)
 RPN_THRESHOLD = 2400
 
 
@@ -36,7 +40,8 @@ class DICGovernor:
     Stage 1 — Branching:     scope gate (sandbox, path traversal)
     Stage 2 — Critical Path: static reversibility analysis
     Stage 3 — FMEA:          S×O×D×R per failure mode
-    Stage 4 — Decision Gate: block if max_rpn ≥ threshold
+    Stage 3b— Monte Carlo:   scenario-weighted rollout → adjusted RPN
+    Stage 4 — Decision Gate: block if adjusted_rpn ≥ scenario threshold
     Stage 5 — Circuit Breaker: session-level escalation
     Stage 6 — Utility:       task progress benefit − risk penalty
     Stage 7 — Belief Update: Beta tracker for LLM risk rate
@@ -47,9 +52,17 @@ class DICGovernor:
         sandbox_root:           Path = SANDBOX_ROOT,
         rpn_threshold:          int  = RPN_THRESHOLD,
         circuit_breaker_config: CircuitBreakerConfig | None = None,
+        scenario:               str  = "normal",
     ):
         self.sandbox_root     = sandbox_root.resolve()
-        self.rpn_threshold    = rpn_threshold
+        self.scenario_cfg     = get_scenario(scenario)
+        # scenario threshold takes precedence over explicit rpn_threshold only
+        # when rpn_threshold is still at the default value
+        self.rpn_threshold    = (
+            self.scenario_cfg.rpn_threshold
+            if rpn_threshold == RPN_THRESHOLD
+            else rpn_threshold
+        )
         self.circuit_breaker  = CircuitBreaker(circuit_breaker_config)
         self.llm_risk_tracker = BetaTracker(1.0, 1.0)
         self._step            = 0
@@ -90,17 +103,36 @@ class DICGovernor:
             "max_rpn": m_rpn,
         })
 
-        # ── 4. Decision Gate ─────────────────────────────────────────── #
-        gate_blocked = m_rpn >= self.rpn_threshold
+        # ── 3b. Monte Carlo ───────────────────────────────────────────── #
+        mc = monte_carlo_rollout(cp.p_irreversible, self.scenario_cfg)
+        mc.base_rpn     = m_rpn
+        mc.adjusted_rpn = int(m_rpn * mc.rpn_multiplier)
         stage_log.append({
-            "stage":     "decision_gate",
-            "max_rpn":   m_rpn,
-            "threshold": self.rpn_threshold,
-            "blocked":   gate_blocked,
+            "stage":                  "monte_carlo",
+            "scenario":               mc.scenario,
+            "n_trials":               mc.n_trials,
+            "p_catastrophic":         mc.p_catastrophic,
+            "p_cascade":              mc.p_cascade,
+            "p_undetected":           mc.p_undetected,
+            "expected_damage":        mc.expected_damage,
+            "detection_effectiveness": mc.detection_effectiveness,
+            "rpn_multiplier":         mc.rpn_multiplier,
+            "base_rpn":               mc.base_rpn,
+            "adjusted_rpn":           mc.adjusted_rpn,
+        })
+
+        # ── 4. Decision Gate ─────────────────────────────────────────── #
+        gate_blocked = mc.adjusted_rpn >= self.rpn_threshold
+        stage_log.append({
+            "stage":        "decision_gate",
+            "max_rpn":      m_rpn,
+            "adjusted_rpn": mc.adjusted_rpn,
+            "threshold":    self.rpn_threshold,
+            "blocked":      gate_blocked,
         })
 
         # ── 5. Circuit Breaker ────────────────────────────────────────── #
-        cb = self.circuit_breaker.evaluate(m_rpn)
+        cb = self.circuit_breaker.evaluate(mc.adjusted_rpn)
         stage_log.append({
             "stage":  "circuit_breaker",
             "state":  cb.state.value,
@@ -111,11 +143,11 @@ class DICGovernor:
         cb_escalated = cb.state.value == "escalate"
 
         # ── 6. Utility ───────────────────────────────────────────────── #
-        utility = self._utility(action, cp, m_rpn)
+        utility = self._utility(action, cp, mc.adjusted_rpn)
         stage_log.append({"stage": "utility", "score": utility})
 
         # ── 7. Belief Update ──────────────────────────────────────────── #
-        risky = m_rpn >= self.rpn_threshold // 2   # above half-threshold = risky signal
+        risky = mc.adjusted_rpn >= self.rpn_threshold // 2
         self.llm_risk_tracker.update(risky)
         stage_log.append({
             "stage":            "belief_update",
@@ -136,10 +168,14 @@ class DICGovernor:
             return self._build(False, action, reason, cp, fmea_serial, m_rpn, cb, utility, stage_log)
 
         if gate_blocked or cb_blocked:
-            reason = cb.reason if cb_blocked else f"RPN {m_rpn} ≥ threshold {self.rpn_threshold}"
-            return self._build(False, action, reason, cp, fmea_serial, m_rpn, cb, utility, stage_log)
+            reason = (
+                cb.reason if cb_blocked else
+                f"adjusted RPN {mc.adjusted_rpn} ≥ threshold {self.rpn_threshold} "
+                f"(base {m_rpn} × {mc.rpn_multiplier}x [{self.scenario_cfg.name} scenario])"
+            )
+            return self._build(False, action, reason, cp, fmea_serial, mc.adjusted_rpn, cb, utility, stage_log)
 
-        return self._build(True, action, None, cp, fmea_serial, m_rpn, cb, utility, stage_log)
+        return self._build(True, action, None, cp, fmea_serial, mc.adjusted_rpn, cb, utility, stage_log)
 
     # ------------------------------------------------------------------ #
     #  Internals                                                           #
