@@ -21,6 +21,7 @@ from ..dic_llm.circuit_breaker import CircuitBreakerConfig
 
 from .rag_retriever    import RAGRetriever, RetrievedChunk
 from .rag_fmea_adapter import adapt, FMEAOverride, top_blocking_citations
+from .memory_store     import MemoryStore, MemoryEntry
 
 
 class RAGGovernor(DICGovernor):
@@ -61,6 +62,7 @@ class RAGGovernor(DICGovernor):
             circuit_breaker_config=circuit_breaker_config,
         )
         self._retriever = RAGRetriever(top_k=top_k)
+        self._memory    = MemoryStore()
 
     # ------------------------------------------------------------------ #
     #  Override evaluate() — inject RAG between Stage 2 and Stage 3       #
@@ -89,11 +91,21 @@ class RAGGovernor(DICGovernor):
 
         # ── 2b. RAG Context ───────────────────────────────────────────── #
         chunks: list[RetrievedChunk] = []
+        memories: list[MemoryEntry]  = []
         override = FMEAOverride()
 
         if action.op != FileOp.DONE:
             chunks   = self._retriever.query(action)
             override = adapt(chunks)
+
+            # ── 2c. Memory Context ────────────────────────────────────── #
+            # Retrieve past failures for similar actions and apply their
+            # accumulated occurrence bumps to the current override so the
+            # FMEA Occurrence score reflects what has been repeatedly blocked.
+            memories = self._memory.retrieve_similar(action.op.value, action.path)
+            if memories:
+                raw_bump = sum(m.occurrence_bump for m in memories)
+                override.occurrence_delta = min(3, raw_bump)  # cap at +3
 
         stage_log.append({
             "stage":    "rag_context",
@@ -107,9 +119,10 @@ class RAGGovernor(DICGovernor):
                 for c in chunks
             ],
             "override": {
-                "severity_delta":  override.severity_delta,
-                "detection_delta": override.detection_delta,
-                "notes":           override.notes,
+                "severity_delta":   override.severity_delta,
+                "detection_delta":  override.detection_delta,
+                "occurrence_delta": override.occurrence_delta,
+                "notes":            override.notes,
             },
             "citations": [
                 {
@@ -122,6 +135,24 @@ class RAGGovernor(DICGovernor):
                 }
                 for c in override.citations
             ],
+        })
+
+        stage_log.append({
+            "stage":                "memory_context",
+            "hits":                 [
+                {
+                    "op":            m.op,
+                    "path":          m.path,
+                    "rpn":           m.rpn,
+                    "block_reason":  m.block_reason,
+                    "justification": m.justification[:2],
+                    "timestamp":     m.timestamp,
+                    "occurrence_bump": m.occurrence_bump,
+                }
+                for m in memories
+            ],
+            "occurrence_delta":     override.occurrence_delta,
+            "total_memory_entries": self._memory.count(),
         })
 
         # ── 3. FMEA (with RAG override applied) ──────────────────────── #
@@ -178,14 +209,32 @@ class RAGGovernor(DICGovernor):
                 "human confirmation required"
             )
             _attach_justification(stage_log, override, reason)
+            self._memory.record(
+                action.op.value, action.path, reason,
+                _get_justification_lines(stage_log), m_rpn,
+            )
             return self._build(False, action, reason, cp, fmea_serial, m_rpn, cb, utility, stage_log)
 
         if gate_blocked or cb_blocked:
             reason = cb.reason if cb_blocked else f"RPN {m_rpn} ≥ threshold {self.rpn_threshold}"
             _attach_justification(stage_log, override, reason)
+            self._memory.record(
+                action.op.value, action.path, reason,
+                _get_justification_lines(stage_log), m_rpn,
+            )
             return self._build(False, action, reason, cp, fmea_serial, m_rpn, cb, utility, stage_log)
 
         return self._build(True, action, None, cp, fmea_serial, m_rpn, cb, utility, stage_log)
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────── #
+
+def _get_justification_lines(stage_log: list) -> list[str]:
+    """Extract justification lines from the most recent block_justification entry."""
+    for entry in reversed(stage_log):
+        if entry.get("stage") == "block_justification":
+            return entry.get("lines", [])
+    return []
 
 
 # ── Block justification ───────────────────────────────────────────────────── #
@@ -238,9 +287,11 @@ def _fmea_table_with_override(
 ) -> dict:
     """
     Build FMEA table identical to risk_fmea.fmea_table() but apply
-    severity_delta and detection_delta from the RAG override.
+    severity_delta, detection_delta, and occurrence_delta from the override.
+    occurrence_delta is driven by memory injection (past failures for similar
+    actions raise the Occurrence estimate before the Beta tracker mean is applied).
     """
-    o_base = occ_from_prob(llm_risk_mean)
+    o_base  = _clamp(occ_from_prob(llm_risk_mean) + override.occurrence_delta)
     s_delta = override.severity_delta
     d_delta = override.detection_delta
     table: dict = {}

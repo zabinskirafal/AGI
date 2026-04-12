@@ -39,15 +39,20 @@ class PolicyCitation:
 @dataclass
 class FMEAOverride:
     """
-    Adjustments to FMEA inputs derived from retrieved policy context.
+    Adjustments to FMEA inputs derived from retrieved policy context
+    and/or injected memory of past failures.
 
     severity_delta  : int              added to base Severity score (clipped 1-10)
     detection_delta : int              added to base Detection score (clipped 1-10)
+    occurrence_delta: int              added to o_base (clipped 1-10); driven by
+                                       memory injection — past failures for similar
+                                       actions raise the Occurrence estimate
     notes           : list[str]        human-readable note for each matched rule
     citations       : list[PolicyCitation]  per-rule traceability records
     """
     severity_delta:  int                    = 0
     detection_delta: int                    = 0
+    occurrence_delta: int                   = 0
     notes:           list[str]              = field(default_factory=list)
     citations:       list[PolicyCitation]   = field(default_factory=list)
 

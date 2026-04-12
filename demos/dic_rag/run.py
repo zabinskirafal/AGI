@@ -79,17 +79,52 @@ def _print_rag_stage(entry: dict) -> None:
 
     s_d  = override.get("severity_delta", 0)
     d_d  = override.get("detection_delta", 0)
+    o_d  = override.get("occurrence_delta", 0)
     notes = override.get("notes", [])
 
     delta_colour = RED if (s_d > 0 or d_d > 0) else (GREEN if (s_d < 0 or d_d < 0) else DIM)
+    occ_suffix = f"  ΔOccurrence={o_d:+d} (memory)" if o_d else ""
     print(_box_line(
-        f"  Override: ΔSeverity={s_d:+d}  ΔDetection={d_d:+d}",
+        f"  Override: ΔSeverity={s_d:+d}  ΔDetection={d_d:+d}{occ_suffix}",
         delta_colour,
     ))
     for note in notes:
         wrapped = textwrap.wrap(note, W - 12)
         for ln in wrapped:
             print(_box_line(f"    ↳ {ln}", DIM))
+
+
+# ── Memory context printer ───────────────────────────────────────────────── #
+
+def _print_memory_stage(entry: dict) -> None:
+    hits          = entry.get("hits", [])
+    occ_delta     = entry.get("occurrence_delta", 0)
+    total_entries = entry.get("total_memory_entries", 0)
+
+    occ_colour = RED if occ_delta > 0 else DIM
+    print(_box_line(
+        f"  MEMORY  {total_entries} stored  │  hits={len(hits)}  │  ΔOccurrence={occ_delta:+d}",
+        occ_colour,
+    ))
+
+    if not hits:
+        print(_box_line(f"    (no similar past failures found)", DIM))
+        return
+
+    for i, h in enumerate(hits, 1):
+        import datetime
+        ts  = h.get("timestamp", "")[:10]   # date only
+        op  = h.get("op", "?").upper()
+        p   = h.get("path", "?")
+        rpn = h.get("rpn", "?")
+        bump = h.get("occurrence_bump", 0)
+        print(_box_line(
+            f"    [{i}] {YELLOW}{op}{RESET} {p}  RPN={rpn}  bump=+{bump}  ({ts})"
+        ))
+        for jline in h.get("justification", [])[:1]:
+            wrapped = textwrap.wrap(jline, W - 12)
+            for ln in wrapped:
+                print(_box_line(f"         {DIM}{ln}{RESET}", ""))
 
 
 # ── Block justification printer ──────────────────────────────────────────── #
@@ -153,6 +188,9 @@ def print_decision(step: int, action: FileAction, d: DICDecision) -> None:
 
         elif stage == "rag_context":
             _print_rag_stage(entry)
+
+        elif stage == "memory_context":
+            _print_memory_stage(entry)
 
         elif stage == "fmea":
             print(_box_line(f"  3. FMEA (RAG-adjusted) max_rpn={entry['max_rpn']}"))
