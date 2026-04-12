@@ -58,22 +58,25 @@ def _footer() -> str:
 # ── RAG context printer ───────────────────────────────────────────────────── #
 
 def _print_rag_stage(entry: dict) -> None:
-    chunks   = entry.get("chunks", [])
-    override = entry.get("override", {})
+    chunks          = entry.get("chunks", [])
+    override        = entry.get("override", {})
+    selected_domain = entry.get("selected_domain", "")
 
-    print(_box_line("RAG CONTEXT", MAGENTA))
+    domain_tag = f"  domain={BOLD}{selected_domain}{RESET}" if selected_domain else ""
+    print(_box_line(f"RAG CONTEXT{domain_tag}", MAGENTA))
 
     if not chunks:
         print(_box_line("  (no chunks retrieved — DONE signal)", DIM))
     else:
         for i, c in enumerate(chunks, 1):
             score   = c.get("score", 0)
-            section = c.get("section", "")[:44]
+            section = c.get("section", "")[:36]
             source  = c.get("source", "")
-            preview = c.get("text_preview", "")[:54]
+            domain  = c.get("domain", "")
+            preview = c.get("text_preview", "")[:50]
             score_colour = GREEN if score >= 0.4 else YELLOW if score >= 0.2 else DIM
             print(_box_line(
-                f"  [{i}] {score_colour}{score:.3f}{RESET}  [{source}]  {section}"
+                f"  [{i}] {score_colour}{score:.3f}{RESET}  [{domain}]  {section}"
             ))
             print(_box_line(f"       {DIM}{preview}…{RESET}", ""))
 

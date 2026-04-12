@@ -95,8 +95,11 @@ class RAGGovernor(DICGovernor):
         override = FMEAOverride()
 
         if action.op != FileOp.DONE:
-            chunks   = self._retriever.query(action)
+            chunks   = self._retriever.query(action)   # domain auto-detected
             override = adapt(chunks)
+            _selected_domain = chunks[0].domain if chunks else "unknown"
+        else:
+            _selected_domain = "none"
 
             # ── 2c. Memory Context ────────────────────────────────────── #
             # Retrieve past failures for similar actions and apply their
@@ -108,12 +111,14 @@ class RAGGovernor(DICGovernor):
                 override.occurrence_delta = min(3, raw_bump)  # cap at +3
 
         stage_log.append({
-            "stage":    "rag_context",
-            "chunks":   [
+            "stage":           "rag_context",
+            "selected_domain": _selected_domain,
+            "chunks":          [
                 {
-                    "section": c.section,
-                    "source":  c.source,
-                    "score":   c.score,
+                    "section":      c.section,
+                    "source":       c.source,
+                    "domain":       c.domain,
+                    "score":        c.score,
                     "text_preview": c.text[:120].replace("\n", " "),
                 }
                 for c in chunks
