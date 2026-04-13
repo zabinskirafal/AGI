@@ -24,7 +24,7 @@ from demos.dic_llm.circuit_breaker import (
 from demos.dic_llm.risk_fmea import FMEAItem, fmea_table, max_rpn
 from demos.dic_llm.bayes import BetaTracker
 
-__version__ = "1.0.0"
+__version__ = "1.2.0"
 __author__  = "Rafał Żabiński"
 
 __all__ = [
